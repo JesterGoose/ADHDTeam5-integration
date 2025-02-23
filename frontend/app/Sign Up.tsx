@@ -26,13 +26,9 @@ const HomeScreen: React.FC = () => {
         <TextInput style={styles.input} placeholder="password" secureTextEntry autoCapitalize="none" />
 
         {/* Button with explicit types */}
-        <TouchableOpacity
-            style={styles.primaryButton}
-            onPress={() => navigation.navigate("tasks")}
-          >
-            <ThemedText style={styles.buttonText}>Continue</ThemedText>
-          </TouchableOpacity>
-
+        <TouchableOpacity style={styles.continueButton} onPress={() => navigation.navigate('tasks')}>
+          <ThemedText style={styles.continueButtonText}>Continue</ThemedText>
+        </TouchableOpacity>
         
           <ThemedText style={styles.loginText}>
             Already have an account? 

@@ -14,9 +14,9 @@ import { Colors } from '@/themes/Colors';
 import { Ionicons } from '@expo/vector-icons';
 
 // Enable smooth layout animations on Android
-/*if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
-}*/
+}
 
 type Guild = {
   name: string;
