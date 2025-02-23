@@ -8,6 +8,7 @@ import {
   TextInput,
   Modal,
 } from "react-native";
+import { useRouter } from "expo-router";
 import TaskCard from "@/components/TaskCard";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -27,6 +28,7 @@ const initialTasks = [
 ];
 
 export default function Tasks() {
+  const router = useRouter();
   const [tasks, setTasks] = useState(initialTasks);
   const [modalVisible, setModalVisible] = useState(false);
   const [newTask, setNewTask] = useState({
@@ -35,19 +37,14 @@ export default function Tasks() {
     dueDate: "",
   });
 
-  // ✅ Open modal
   const openModal = () => setModalVisible(true);
-
-  // ✅ Close modal
   const closeModal = () => {
     setModalVisible(false);
-    setNewTask({ title: "", description: "", dueDate: "" }); // Reset input
+    setNewTask({ title: "", description: "", dueDate: "" });
   };
 
-  // ✅ Add a new task
   const addTask = () => {
-    if (!newTask.title.trim()) return; // Prevent empty tasks
-
+    if (!newTask.title.trim()) return;
     setTasks([
       ...tasks,
       {
@@ -57,13 +54,11 @@ export default function Tasks() {
         dueDate: newTask.dueDate || "No due date",
       },
     ]);
-
     closeModal();
   };
 
   return (
     <View style={styles.container}>
-      {/* ✅ Task List */}
       <FlatList
         data={tasks}
         keyExtractor={(item) => item.id}
@@ -79,61 +74,48 @@ export default function Tasks() {
         )}
       />
 
-      {/* ✅ Floating Plus Button */}
       <Pressable style={styles.fab} onPress={openModal}>
         <Ionicons name="add" size={30} color="white" />
       </Pressable>
 
-      {/* ✅ Task Creation Modal */}
       <Modal visible={modalVisible} transparent animationType="slide">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Create New Task</Text>
-
-            {/* ✅ Task Title Input */}
             <TextInput
               style={styles.input}
               placeholder="Task Title"
               value={newTask.title}
               onChangeText={(text) => setNewTask({ ...newTask, title: text })}
             />
-
-            {/* ✅ Task Description Input */}
             <TextInput
               style={styles.input}
               placeholder="Description"
               value={newTask.description}
-              onChangeText={(text) =>
-                setNewTask({ ...newTask, description: text })
-              }
+              onChangeText={(text) => setNewTask({ ...newTask, description: text })}
             />
-
-            {/* ✅ Task Due Date Input */}
             <TextInput
               style={styles.input}
               placeholder="Due Date (YYYY-MM-DD)"
               value={newTask.dueDate}
               onChangeText={(text) => setNewTask({ ...newTask, dueDate: text })}
             />
-
-            {/* ✅ Buttons */}
             <View style={styles.buttonRow}>
-              <Pressable
-                style={[styles.button, styles.cancelButton]}
-                onPress={closeModal}
-              >
+              <Pressable style={[styles.button, styles.cancelButton]} onPress={closeModal}>
                 <Text style={styles.buttonText}>Cancel</Text>
               </Pressable>
-              <Pressable
-                style={[styles.button, styles.createButton]}
-                onPress={addTask}
-              >
+              <Pressable style={[styles.button, styles.createButton]} onPress={addTask}>
                 <Text style={styles.buttonText}>Create</Text>
               </Pressable>
             </View>
           </View>
         </View>
       </Modal>
+
+      {/* ✅ Guild Management Button */}
+      <Pressable style={styles.guildButton} onPress={() => router.push("/Guild")}> 
+        <Text style={styles.guildButtonText}>Guild</Text>
+      </Pressable>
     </View>
   );
 }
@@ -141,20 +123,16 @@ export default function Tasks() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    margin: "auto",
     alignItems: "center",
     justifyContent: "center",
   },
   task: {
     flexGrow: 1,
     margin: 10,
-    flexDirection: "column",
   },
-
-  /* ✅ Floating Button */
   fab: {
     position: "absolute",
-    bottom: 30,
+    bottom: 90,
     right: 30,
     backgroundColor: "#007AFF",
     width: 60,
@@ -167,30 +145,23 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 4,
   },
-
-  /* ✅ Modal Overlay */
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0, 0, 0, 0.5)",
     justifyContent: "center",
     alignItems: "center",
   },
-
-  /* ✅ Modal Content */
   modalContent: {
     backgroundColor: "#fff",
     padding: 20,
     borderRadius: 10,
     width: "80%",
-    elevation: 5,
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 10,
   },
-
-  /* ✅ Input Fields */
   input: {
     borderWidth: 1,
     borderColor: "#ccc",
@@ -199,8 +170,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     width: "100%",
   },
-
-  /* ✅ Buttons */
   buttonRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -222,6 +191,22 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "#fff",
+    fontWeight: "bold",
+  },
+  guildButton: {
+    backgroundColor: "#007AFF",
+    padding: 15,
+    borderRadius: 8,
+    width: "100%",
+    alignItems: "center",
+    position: "absolute",
+    bottom: 20,
+    left: 20,
+    right: 20,
+  },
+  guildButtonText: {
+    color: "white",
+    fontSize: 16,
     fontWeight: "bold",
   },
 });

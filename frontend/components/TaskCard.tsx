@@ -4,55 +4,77 @@ import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
+  withTiming,
   withSpring,
 } from "react-native-reanimated";
 import { Colors } from "@/themes/Colors";
 
 type Props = {
-  id: string; // ✅ Task ID
   title: string;
   description?: string;
   dueDate: string;
-  onComplete: (id: string) => void; // ✅ Callback to remove task
 };
 
-export default function TaskCard({ id, title, description, dueDate, onComplete }: Props) {
-  const translateX = useSharedValue(0); // ✅ Track swipe movement
+export default function TaskCard({ title, description, dueDate }: Props) {
+  const translateX = useSharedValue(0); // ✅ Track horizontal movement
+  const backgroundColor = useSharedValue(Colors.light.primary); // ✅ Background color
 
-  // ✅ Swipe Gesture
+  // Swipe Gesture Handler
   const swipeGesture = Gesture.Pan()
     .onUpdate((event) => {
-      if (event.translationX > 0) {
-        translateX.value = event.translationX; // ✅ Allow right swipe
+      if (event.translationX < 0) {
+        translateX.value = event.translationX;
+      } else {
+        translateX.value = event.translationX;
       }
     })
     .onEnd(() => {
       if (translateX.value > 100) {
-        onComplete(id); // ✅ Remove task immediately when swiped past 100px
-      } else {
-        translateX.value = withSpring(0); // ✅ Reset position if not swiped enough
+        //Swiped far right → Task Completed (Brighter Green)
+        backgroundColor.value = "#00E676"; // Brighter green color
+        translateX.value = withSpring(0); // Snap back after success
+      } else if (translateX.value < -100){
+        //Swiped left -> Task Failed
+        backgroundColor.value = "#FF3B30"; //Bright red color
+        translateX.value = withSpring(0); 
+      } 
+      else {
+        translateX.value = withSpring(0);
       }
     });
+    
 
-  // ✅ Animated Styles
+  // Animated Styles
   const animatedCardStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }], // ✅ Move the card
+    transform: [
+      { translateX: Math.max(-150, Math.min(translateX.value, 150)) }, // ✅ Limit the movement
+    ], // ✅ Move the card
+    backgroundColor: withTiming(backgroundColor.value, { duration: 25 }), // ✅ Smooth color transition
   }));
 
   return (
-    <GestureDetector gesture={swipeGesture}>
-      <Animated.View style={[styles.container, animatedCardStyle]}>
-        <View style={styles.titleContainer}>
-          <Text style={styles.title}>{title}</Text>
-        </View>
-        <Text style={styles.description}>{description || "No description"}</Text>
-        <Text style={styles.due}>{dueDate}</Text>
-      </Animated.View>
-    </GestureDetector>
+    <View style={styles.wrapper}>
+      {/* ✅ Swipable Card */}
+      <GestureDetector gesture={swipeGesture}>
+        <Animated.View style={[styles.container, animatedCardStyle]}>
+          <View style={styles.titleContainer}>
+            <Text style={styles.title}>{title}</Text>
+          </View>
+          <Text style={styles.description}>
+            {description ? description : "No description"}
+          </Text>
+          <Text style={styles.due}>{dueDate}</Text>
+        </Animated.View>
+      </GestureDetector>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  wrapper: {
+    position: "relative",
+    justifyContent: "center",
+  },
   container: {
     flexGrow: 1,
     maxWidth: 500,
@@ -60,7 +82,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.light.secondary,
     padding: 15,
-    backgroundColor: "#4CD964", // ✅ Brighter Green for completed task
   },
   titleContainer: {
     paddingBottom: 5,
