@@ -33,7 +33,7 @@ const Login: React.FC = () => {
           secureTextEntry 
         />
 
-        <TouchableOpacity style={styles.continueButton}>
+        <TouchableOpacity style={styles.continueButton} onPress={() => navigation.navigate('tasks')}>
           <ThemedText style={styles.continueButtonText}>Continue</ThemedText>
         </TouchableOpacity>
 
