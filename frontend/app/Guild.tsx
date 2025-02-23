@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   StyleSheet,
   TextInput,
@@ -7,52 +7,86 @@ import {
   LayoutAnimation,
   UIManager,
   Platform,
-} from "react-native";
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
-import { Colors } from "@/themes/Colors";
-import { Ionicons } from "@expo/vector-icons";
+} from 'react-native';
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
+import { Colors } from '@/themes/Colors';
+import { Ionicons } from '@expo/vector-icons';
 
-// Enable smooth layout transitions on Android
-if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
+// Enable smooth layout animations on Android
+/*if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
-}
+}*/
+
+type Guild = {
+  name: string;
+  password: string;
+};
 
 const Guild: React.FC = () => {
-  const [isDropdownVisible, setDropdownVisible] = useState<boolean>(false);
-  const [guildName, setGuildName] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
+  const [guilds, setGuilds] = useState<Guild[]>([]);
+  const [guildName, setGuildName] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [isCreateVisible, setCreateVisible] = useState<boolean>(false);
+  const [isJoinVisible, setJoinVisible] = useState<boolean>(false);
 
-  const toggleDropdown = () => {
-    LayoutAnimation.easeInEaseOut(); // Smooth expand/collapse effect
-    setDropdownVisible(!isDropdownVisible);
+  const toggleCreateDropdown = () => {
+    LayoutAnimation.easeInEaseOut();
+    setCreateVisible(!isCreateVisible);
+    setJoinVisible(false); // Ensure only one dropdown is open
+  };
+
+  const toggleJoinDropdown = () => {
+    LayoutAnimation.easeInEaseOut();
+    setJoinVisible(!isJoinVisible);
+    setCreateVisible(false); // Ensure only one dropdown is open
   };
 
   const handleCreateGuild = () => {
     if (!guildName.trim() || !password.trim()) return;
+    
+    if (guilds.find(g => g.name === guildName)) {
+      console.warn('Guild name already exists!');
+      return;
+    }
 
-    console.log("Creating guild:", { guildName, password });
-    setDropdownVisible(false);
-    setGuildName("");
-    setPassword("");
+    const newGuild: Guild = { name: guildName, password };
+    setGuilds([...guilds, newGuild]);
+
+    console.log('Created Guild:', newGuild);
+    resetForm();
+    setCreateVisible(false);
+  };
+
+  const handleJoinGuild = () => {
+    const existingGuild = guilds.find(g => g.name === guildName && g.password === password);
+    if (!existingGuild) {
+      console.warn('Guild not found or incorrect password!');
+      return;
+    }
+
+    console.log('Joined Guild:', guildName);
+    resetForm();
+    setJoinVisible(false);
+  };
+
+  const resetForm = () => {
+    setGuildName('');
+    setPassword('');
   };
 
   return (
     <ThemedView style={styles.container}>
-      {/* Toggle Dropdown Button */}
-      <TouchableOpacity style={styles.toggleButton} onPress={toggleDropdown}>
+      {/* Create Guild Button */}
+      <TouchableOpacity style={styles.toggleButton} onPress={toggleCreateDropdown}>
         <ThemedText style={styles.buttonText}>
-          {isDropdownVisible ? "Cancel" : "Create Guild"}
+          {isCreateVisible ? 'Cancel' : 'Create Guild'}
         </ThemedText>
-        <Ionicons
-          name={isDropdownVisible ? "chevron-up" : "chevron-down"}
-          size={20}
-          color={Colors.light.onPrimary}
-        />
+        <Ionicons name={isCreateVisible ? 'chevron-up' : 'chevron-down'} size={20} color="#fff" />
       </TouchableOpacity>
 
-      {/* Dropdown Section */}
-      {isDropdownVisible && (
+      {/* Create Guild Dropdown */}
+      {isCreateVisible && (
         <View style={styles.dropdown}>
           <TextInput
             style={styles.input}
@@ -71,8 +105,42 @@ const Guild: React.FC = () => {
             secureTextEntry
           />
 
-          <TouchableOpacity style={styles.createButton} onPress={handleCreateGuild}>
-            <ThemedText style={styles.createButtonText}>Create</ThemedText>
+          <TouchableOpacity style={styles.actionButton} onPress={handleCreateGuild}>
+            <ThemedText style={styles.actionButtonText}>Create</ThemedText>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Join Guild Button */}
+      <TouchableOpacity style={styles.toggleButton} onPress={toggleJoinDropdown}>
+        <ThemedText style={styles.buttonText}>
+          {isJoinVisible ? 'Cancel' : 'Join Guild'}
+        </ThemedText>
+        <Ionicons name={isJoinVisible ? 'chevron-up' : 'chevron-down'} size={20} color="#fff" />
+      </TouchableOpacity>
+
+      {/* Join Guild Dropdown */}
+      {isJoinVisible && (
+        <View style={styles.dropdown}>
+          <TextInput
+            style={styles.input}
+            placeholder="Guild Name"
+            placeholderTextColor="rgba(255,255,255,0.5)"
+            value={guildName}
+            onChangeText={setGuildName}
+          />
+
+          <TextInput
+            style={styles.input}
+            placeholder="Password"
+            placeholderTextColor="rgba(255,255,255,0.5)"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+          />
+
+          <TouchableOpacity style={styles.actionButton} onPress={handleJoinGuild}>
+            <ThemedText style={styles.actionButtonText}>Join</ThemedText>
           </TouchableOpacity>
         </View>
       )}
@@ -83,7 +151,7 @@ const Guild: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
+    justifyContent: 'center',
     padding: 20,
     backgroundColor: Colors.light.background,
   },
@@ -91,44 +159,45 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.light.primary,
     padding: 15,
     borderRadius: 8,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 10,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
   },
   buttonText: {
     color: Colors.light.onPrimary,
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: 'bold',
+    marginRight: 10,
   },
   dropdown: {
-    marginTop: 15,
     padding: 15,
     borderRadius: 8,
-    backgroundColor: "rgba(4, 36, 124, 0.95)",
+    backgroundColor: 'rgba(4, 36, 124, 0.95)',
+    marginBottom: 10,
   },
   input: {
-    width: "100%",
+    width: '100%',
     height: 50,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.3)",
+    borderColor: 'rgba(255,255,255,0.3)',
     borderRadius: 8,
     paddingHorizontal: 16,
-    color: "#fff",
-    backgroundColor: "rgba(255,255,255,0.1)",
+    color: '#fff',
+    backgroundColor: 'rgba(255,255,255,0.1)',
     fontSize: 16,
     marginBottom: 10,
   },
-  createButton: {
-    backgroundColor: "#5476DE",
+  actionButton: {
+    backgroundColor: '#5476DE',
     padding: 16,
     borderRadius: 8,
-    alignItems: "center",
+    alignItems: 'center',
   },
-  createButtonText: {
-    color: "#fff",
+  actionButtonText: {
+    color: '#fff',
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
 });
 
